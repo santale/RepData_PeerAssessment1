@@ -1,0 +1,68 @@
+Reproducible
+==========
+
+text
+
+
+
+```{r}
+library(lubridate)
+data<-read.csv("activity.csv")
+
+
+step<- aggregate(steps~date, data, sum, na.rm=TRUE)
+
+png("1.png")
+barplot(step$steps, names.arg=step$date, xlab = "date", ylab = "steps")
+dev.off()
+
+mean(step$steps)
+median(step$steps)
+
+
+step1<- aggregate(steps~interval, data, mean, na.rm=TRUE)
+png("2.png")
+plot(step1,type="l")
+dev.off()
+
+step1$interval[which.max(step1$steps)]
+
+
+library(lubridate)
+sum(is.na(data$steps))
+
+
+data1<-merge(data,step1,by="interval")
+
+
+na <- is.na(data$steps)
+data1$steps.x[na]<-data1$steps.y[na]
+
+step2<- aggregate(steps.x~date, data1, sum)
+png("3.png")
+barplot(step2$steps.x, names.arg=step2$date, xlab = "date", ylab = "steps")
+dev.off()
+mean(step2$steps.x)
+median(step2$steps.x)
+
+
+
+day <- function(date) {
+    if (weekdays(as.Date(date)) %in% c("sabato", "domenica")) {
+        "weekend"
+    } else {
+        "weekday"
+    }
+}
+data1$day<-sapply(data1$date, day)
+
+png("4.png")
+par(mfrow = c(2, 1))
+dataweekday<-subset(data1,day=="weekday")
+stepweekday<- aggregate(steps.x~interval, dataweekday, mean)
+plot(stepweekday,type="l",ylab = "steps",  main="weekday")
+dataweekend<-subset(data1,day=="weekend")
+stepweekend<- aggregate(steps.x~interval, dataweekend,mean)
+plot(stepweekend,type="l",ylab = "steps",  main="weekend")
+dev.off()
+```
